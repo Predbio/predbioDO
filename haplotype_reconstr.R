@@ -17,26 +17,61 @@ extract.raw.data(in.path = dirs, prefix = prefix, out.path = "../haplo_input", a
 # Read in the data and save to an Rdata file.
 setwd("../haplo_input")
 x = read.delim("x.txt", row.names = NULL)
-y = read.delim("y.txt")
-g = read.delim("g.txt")
+y = read.delim("y.txt", row.names = NULL)
+g = read.delim("geno.txt", row.names = NULL)
+rownames(x) = make.unique(make.names(x[,1]))
+x = as.matrix(x[,-1])
+rownames(y) = make.unique(make.names(y[,1]))
+y = as.matrix(y[,-1])
+rownames(g) = make.unique(make.names(g[,1]))
+g = as.matrix(g[,-1])
 save(x, y, g, file = "x_y_geno.Rdata")
+rm(x,y,g)
+gc()
 
 # Filter samples with low call rates.
+bad.samples = filter.samples(path = ".", thr = 0.9)
+write.table(bad.samples, "bad.samples.txt", sep = "\t")
+
+# Read in the data and save to an Rdata file.
+setwd("../haplo_input")
+x = read.delim("x.filt.txt", row.names = NULL)
+y = read.delim("y.filt.txt", row.names = NULL)
+g = read.delim("geno.filt.txt", row.names = NULL)
+rownames(x) = make.unique(make.names(x[,1]))
+x = as.matrix(x[,-1])
+rownames(y) = make.unique(make.names(y[,1]))
+y = as.matrix(y[,-1])
+rownames(g) = make.unique(make.names(g[,1]))
+g = as.matrix(g[,-1])
+save(x, y, g, file = "x_y_geno_filtered.Rdata")
 
 # Predict sex.
+load(url("ftp://ftp.jax.org/MUGA/GM_snps.Rdata"))
+png("predbio_sex.png", width = 800, height = 800, res = 128)
+sex = sex.predict(x = x, y = y, snps = GM_snps, plot = TRUE)
+dev.off()
 
 # Add generations.
+#######################
+# Get true generations.
+#######################
+gen = rep(16, nrow(x))
+names(gen) = names(sex)
 
 # Write out the data that will be used for haplotype reconstruction.
-
+setwd("..")
+data.filename = "haplo_input/GM_input_data.Rdata"
+save(x, y, g, sex, gen, file = data.filename)
 
 ###
 # Haplotype Reconstruction.
 
 # Load in the data.
 setwd("/home/rstudio")
-load(file = "input_data/GM_input_data.Rdata")
+load(file = data.filename)
 
+# Craete the data object for DOQTL.
 data = list(geno = g, sex = sex, gen = gen)
 rm(x, y, g, sex, gen)
 gc()
