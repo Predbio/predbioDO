@@ -78,7 +78,7 @@ gc()
 
 # Run calc.genoprobs.
 setwd("HMM")
-calc.genoprob(data = data, chr = chr, output.dir = ".",
+calc.genoprob(data = data, output.dir = ".",
      plot = FALSE, array = "gigamuga", sampletype = "DO",
      method = "allele")
 
