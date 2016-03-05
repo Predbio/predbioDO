@@ -62,6 +62,8 @@ names(gen) = names(sex)
 # Write out the data that will be used for haplotype reconstruction.
 setwd("..")
 data.filename = "haplo_input/GM_input_data.Rdata"
+g[g == TRUE] = "T"
+g[g == "-"] = "N"
 save(x, y, g, sex, gen, file = data.filename)
 
 ###
